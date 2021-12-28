@@ -1,0 +1,20 @@
+{
+    "name": "ztpc/mycm-easyadmin",
+    "description": "根据zhongshaofa/easyadmin-sdk修改版本",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "afeizt",
+            "email": "afeizt@163.com"
+        }
+    ],
+    "require": {
+		"php": ">=7.0",
+        "doctrine/annotations":"^1.13.1"
+	},
+    	"autoload": {
+		"psr-4": {
+			"mycm\\EasyAdmin\\": "./src"
+		}
+	}
+}
