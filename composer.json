@@ -14,7 +14,7 @@
 	},
     	"autoload": {
 		"psr-4": {
-			"mycm\\EasyAdmin\\": "./src"
+			"EasyAdmin\\": "./src"
 		}
 	}
 }
