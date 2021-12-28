@@ -1,17 +1,8 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | EasyAdmin
-// +----------------------------------------------------------------------
-// | PHP交流群: 763822524
-// +----------------------------------------------------------------------
-// | 开源协议  https://mit-license.org 
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zhongshaofa/EasyAdmin
-// +----------------------------------------------------------------------
+
 
 namespace EasyAdmin\upload\driver\qnoss;
-
 
 use EasyAdmin\upload\interfaces\OssDriver;
 use Qiniu\Auth;
@@ -19,7 +10,6 @@ use Qiniu\Storage\UploadManager;
 
 class Oss implements OssDriver
 {
-
     protected static $instance;
 
     protected $accessKey;
@@ -39,7 +29,7 @@ class Oss implements OssDriver
         $this->bucket = $config['qnoss_bucket'];
         $this->domain = $config['qnoss_domain'];
         $this->auth = new Auth($this->accessKey, $this->secretKey);
-        return $this;
+        // return $this;
     }
 
     public static function instance($config)
@@ -47,6 +37,7 @@ class Oss implements OssDriver
         if (is_null(self::$instance)) {
             self::$instance = new static($config);
         }
+
         return self::$instance;
     }
 
@@ -58,15 +49,14 @@ class Oss implements OssDriver
         if ($error !== null) {
             return [
                 'save' => false,
-                'msg'  => '保存失败',
+                'msg' => '保存失败',
             ];
         } else {
             return [
                 'save' => true,
-                'msg'  => '上传成功',
-                'url'  => $this->domain . '/' . $result['key'],
+                'msg' => '上传成功',
+                'url' => $this->domain.'/'.$result['key'],
             ];
         }
     }
-
 }

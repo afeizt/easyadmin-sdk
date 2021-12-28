@@ -14,7 +14,6 @@ namespace EasyAdmin\auth;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\Common\Annotations\DocParser;
 use Doctrine\Common\Annotations\FileCacheReader;
 use EasyAdmin\annotation\ControllerAnnotation;
 use EasyAdmin\annotation\NodeAnotation;
@@ -29,25 +28,81 @@ class Node
 {
 
     /**
-     * @var string 当前文件夹
+     * @var 当前文件夹
      */
-    protected $basePath;
+    protected $dir;
 
     /**
-     * @var string 命名空间前缀
+     * @var 命名空间前缀
      */
-    protected $baseNamespace;
+    protected $namespacePrefix;
+
+    /**
+     * 注解缓存地址
+     * @var string
+     */
+    protected $annotationCacheDir;
+
+    /**
+     * 注解debug，建议常开
+     * @var bool
+     */
+    protected $annotationDebug = true;
 
     /**
      * 构造方法
      * Node constructor.
-     * @param string $basePath 读取的文件夹
-     * @param string $baseNamespace  读取的命名空间前缀
      */
-    public function __construct($basePath, $baseNamespace)
+    public function __construct()
     {
-        $this->basePath                = $basePath;
-        $this->baseNamespace    = $baseNamespace;
+        $this->dir                = base_path() . 'admin' . DIRECTORY_SEPARATOR . 'controller';
+        $this->annotationCacheDir = runtime_path() . 'annotation' . DIRECTORY_SEPARATOR . 'node';
+        $this->namespacePrefix    = "app\admin\controller";
+        return $this;
+    }
+
+    /**
+     * 设置当前文件夹
+     * @param $dir
+     * @return $this
+     */
+    public function setDir($dir)
+    {
+        $this->dir = $dir;
+        return $this;
+    }
+
+
+    /**
+     * 设置命名空间前缀
+     * @param $namespacePrefix
+     * @return $this
+     */
+    public function setNamespacePrefix($namespacePrefix)
+    {
+        $this->namespacePrefix = $namespacePrefix;
+        return $this;
+    }
+
+    /**
+     * 设置注解缓存地址
+     * @param $annotationCacheDir
+     * @return $this
+     */
+    public function setAnnotationCacheDir($annotationCacheDir)
+    {
+        $this->annotationCacheDir = $annotationCacheDir;
+        return $this;
+    }
+
+    /**
+     * 设置注解debug
+     * @param $annotationDebug
+     * @return $this
+     */
+    public function setAnnotationDebug($annotationDebug = true)
+    {
+        $this->annotationDebug = $annotationDebug;
         return $this;
     }
 
@@ -63,10 +118,7 @@ class Node
 
         if (!empty($controllerList)) {
             AnnotationRegistry::registerLoader('class_exists');
-            $parser = new DocParser();
-            $parser->setIgnoreNotImportedAnnotations(true);
-            $reader = new AnnotationReader($parser);
-
+            $reader = new FileCacheReader(new AnnotationReader(), $this->annotationCacheDir, $this->annotationDebug);
             foreach ($controllerList as $controllerFormat => $controller) {
 
                 // 获取类和方法的注释信息
@@ -116,7 +168,7 @@ class Node
      */
     public function getControllerList()
     {
-        return $this->readControllerFiles($this->basePath);
+        return $this->readControllerFiles($this->dir);
     }
 
     /**
@@ -126,7 +178,7 @@ class Node
      */
     protected function readControllerFiles($path)
     {
-        list($list, $temp_list, $dirExplode) = [[], scandir($path), explode($this->basePath, $path)];
+        list($list, $temp_list, $dirExplode) = [[], scandir($path), explode($this->dir, $path)];
         $middleDir = isset($dirExplode[1]) && !empty($dirExplode[1]) ? str_replace('/', '\\', substr($dirExplode[1], 1)) . "\\" : null;
 
         foreach ($temp_list as $file) {
@@ -147,7 +199,7 @@ class Node
                 // 根目录下的文件
                 $className = str_replace('.php', '', $file);
                 $controllerFormat = str_replace('\\', '.', $middleDir) . CommonTool::humpToLine(lcfirst($className));
-                $list[$controllerFormat] = "{$this->baseNamespace}\\{$middleDir}" . $className;
+                $list[$controllerFormat] = "{$this->namespacePrefix}\\{$middleDir}" . $className;
             }
         }
         return $list;

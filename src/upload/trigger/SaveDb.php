@@ -30,9 +30,6 @@ class SaveDb
      */
     public static function trigger($tableName, $data)
     {
-        if (isset($data['original_name'])) {
-            $data['original_name'] = htmlspecialchars($data['original_name'], ENT_QUOTES);
-        }
         Db::name($tableName)->save($data);
     }
 

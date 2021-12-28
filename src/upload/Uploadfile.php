@@ -1,14 +1,6 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | EasyAdmin
-// +----------------------------------------------------------------------
-// | PHP交流群: 763822524
-// +----------------------------------------------------------------------
-// | 开源协议  https://mit-license.org 
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zhongshaofa/EasyAdmin
-// +----------------------------------------------------------------------
+
 
 namespace EasyAdmin\upload;
 
@@ -20,44 +12,48 @@ use think\File;
 
 /**
  * 上传组件
- * Class Uploadfile
- * @package EasyAdmin\upload
+ * Class Uploadfile.
  */
 class Uploadfile
 {
-
     /**
      * 当前实例对象
+     *
      * @var object
      */
     protected static $instance;
 
     /**
-     * 上传方式
+     * 上传方式.
+     *
      * @var string
      */
     protected $uploadType = 'local';
 
     /**
-     * 上传配置文件
+     * 上传配置文件.
+     *
      * @var array
      */
     protected $uploadConfig;
 
     /**
      * 需要上传的文件对象
+     *
      * @var File
      */
     protected $file;
 
     /**
-     * 保存上传文件的数据表
+     * 保存上传文件的数据表.
+     *
      * @var string
      */
     protected $tableName = 'system_uploadfile';
 
     /**
-     * 获取对象实例
+     * 获取对象实例.
+     *
      * @return Uploadfile|object
      */
     public static function instance()
@@ -65,55 +61,69 @@ class Uploadfile
         if (is_null(self::$instance)) {
             self::$instance = new static();
         }
+
         return self::$instance;
     }
 
     /**
      * 设置上传对象
+     *
      * @param $value
+     *
      * @return $this
      */
     public function setFile($value)
     {
         $this->file = $value;
+
         return $this;
     }
 
     /**
-     * 设置上传文件
+     * 设置上传文件.
+     *
      * @param $value
+     *
      * @return $this
      */
     public function setUploadConfig($value)
     {
         $this->uploadConfig = $value;
+
         return $this;
     }
 
     /**
-     * 设置上传方式
+     * 设置上传方式.
+     *
      * @param $value
+     *
      * @return $this
      */
     public function setUploadType($value)
     {
         $this->uploadType = $value;
+
         return $this;
     }
 
     /**
-     * 设置保存数据表
+     * 设置保存数据表.
+     *
      * @param $value
+     *
      * @return $this
      */
     public function setTableName($value)
     {
         $this->tableName = $value;
+
         return $this;
     }
 
     /**
-     * 保存文件
+     * 保存文件.
+     *
      * @return array|void
      */
     public function save()
@@ -130,9 +140,17 @@ class Uploadfile
         }
         $save = $obj->setUploadConfig($this->uploadConfig)
             ->setUploadType($this->uploadType)
+            ->setWaterMarkImage($this->uploadConfig['watermark_image'])
+            ->setWaterMarkType($this->uploadConfig['watermark_type'])
+            ->setWaterMarkContent($this->uploadConfig['watermark_text'])
+            ->setAddWatermark($this->uploadConfig['add_watermark'])
             ->setTableName($this->tableName)
+            ->setImageThumb($this->uploadConfig['image_thumb'])
+            ->setImageThumbWidth($this->uploadConfig['image_thumb_width'])
+            ->setImageThumbHeight($this->uploadConfig['image_thumb_height'])
             ->setFile($this->file)
             ->save();
+
         return $save;
     }
 }
