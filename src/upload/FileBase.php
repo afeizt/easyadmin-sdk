@@ -557,7 +557,7 @@ class FileBase
 				$watermark_text_count = strlen($watermark_text);
 				$font_size = $this->watermark_text_size * 50;
 				$font_angle = 0;
-				$font_url = 'fonts/SourceHanSansK-Bold.ttf'; //水印字体;
+				$font_url = __DIR__ . '/fonts/SourceHanSansK-Bold.ttf'; //水印字体;
 				$f = imagettfbbox($font_size, $font_angle, $font_url, $watermark_text);
 				// $watermark_width = imagefontwidth($fontv) * ($watermark_text_count + 2); //字体宽度,留2px边距
 				$watermark_width = $f[2] - $f[0];

@@ -147,7 +147,7 @@ class Uploadfile
 		 ->setUploadType($this->uploadType)
 		 ->setWaterMarkImage($this->uploadConfig['watermark_image'] ?? '')
 		 ->setWaterMarkType($this->uploadConfig['watermark_type'] ?? 0)
-		 ->setWatermarkTextSize($this->uploadConfig['watermark_text_size'] ?? 50)
+		 ->setWatermarkTextSize($this->uploadConfig['watermark_text_size'] ?? 5)
 		 ->setWaterMarkContent($this->uploadConfig['watermark_text'] ?? '')
 		 ->setAddWatermark($this->uploadConfig['add_watermark'] ?? 0)
 		 ->setTableName($this->tableName)
