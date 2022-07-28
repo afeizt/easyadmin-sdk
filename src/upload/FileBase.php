@@ -27,6 +27,7 @@ class FileBase
 	 */
 	protected $file;
 
+	protected $watermark_text_size = 50;
 	/**
 	 * 上传完成的文件路径.
 	 *
@@ -99,6 +100,18 @@ class FileBase
 	 */
 	protected $watermark_type = 'image';
 
+	/**
+	 * upload_custom_domain自定义域名地址
+	 *
+	 * @var string
+	 */
+	protected $upload_custom_domain = '';
+	/**
+	 * upload_full_path是否使用完整路径（包含域名，仅对本地上传路径有效）
+	 *
+	 * @var bool
+	 */
+	protected $upload_full_path = false;
 	/**
 	 * watermark_image水印图片.
 	 *
@@ -174,7 +187,18 @@ class FileBase
 
 		return $this;
 	}
-
+	/**
+	 * setWatermarkTextSize设置水印文字大小
+	 *
+	 * @param  mixed $size
+	 * @return $this
+	 */
+	public function setWatermarkTextSize($size)
+	{
+		if ($size > 0)
+			$this->watermark_text_size = $size;
+		return $this;
+	}
 	/**
 	 * setWaterMarkImage设置水印图片.
 	 *
@@ -244,7 +268,16 @@ class FileBase
 
 		return $this;
 	}
-
+	public function setUploadCustomDomain($value)
+	{
+		$this->upload_custom_domain = $value;
+		return $this;
+	}
+	public function setUploadFullPath($value)
+	{
+		$this->upload_full_path = (bool)$value;
+		return $this;
+	}
 	/**
 	 * 设置上传配置.
 	 *
@@ -294,7 +327,8 @@ class FileBase
 	{
 		$this->completeFilePath = Filesystem::disk('public')->putFile('upload', $this->file);
 		$this->completeFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
-		$this->completeFileUrl = request()->domain() . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
+		// $this->completeFileUrl = request()->domain() . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
+		$this->completeFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
 		$ext = $this->file->extension();
 		$image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
 
@@ -306,10 +340,29 @@ class FileBase
 		{
 			$this->completeThumbFilePath = $this->createThumbImage($this->completeFilePath, $ext);
 			$this->completeThumbFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
-			$this->completeThumbFileUrl = request()->domain() . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
+			$this->completeThumbFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
 		}
 	}
-
+	private function getUrlPrefix()
+	{
+		if ($this->upload_custom_domain != '' && $this->upload_full_path == true)
+		{
+			$match = preg_match('/http?:\/\//', $this->upload_custom_domain);
+			if (!$match)
+				$this->setUploadCustomDomain('//' . $this->upload_custom_domain);
+			if (strripos($this->upload_custom_domain, '/') < strlen($this->upload_custom_domain) - 1)
+				$this->setUploadCustomDomain($this->upload_custom_domain . '/');
+			return $this->upload_custom_domain;
+		}
+		elseif ($this->upload_full_path == true)
+		{
+			return request()->domain() . '/';
+		}
+		else
+		{
+			return '/';
+		}
+	}
 	private function createThumbImage($file, $ext)
 	{
 		$mimeType = $this->file->getOriginalMime();
@@ -502,19 +555,19 @@ class FileBase
 			case 'text': //加水印字符串
 				$watermark_text = $this->watermark_string;
 				$watermark_text_count = strlen($watermark_text);
-				$font_size = 45;
+				$font_size = $this->watermark_text_size * 50;
 				$font_angle = 0;
-				$font_url = $_SERVER['DOCUMENT_ROOT'] . '/fonts/SourceHanSansK-Bold.ttf'; //水印字体;
+				$font_url = 'fonts/SourceHanSansK-Bold.ttf'; //水印字体;
 				$f = imagettfbbox($font_size, $font_angle, $font_url, $watermark_text);
 				// $watermark_width = imagefontwidth($fontv) * ($watermark_text_count + 2); //字体宽度,留2px边距
 				$watermark_width = $f[2] - $f[0];
 				//  $watermark_height = imagefontheight($fontv) + 2; //字体高度,留2px边距
 				$watermark_height = $f[1] - $f[7];
-				$x1 = $file_width / 2 - $watermark_width / 2; //得到居中水印的左边坐标;
-				$y1 = $file_height / 2 - $watermark_height / 2; //得到居中水印的上边坐标
-				$y_base = $file_height / 2 + $watermark_height / 2; //得到左下角基线左边近似值
-				$x2 = $x1 + $watermark_width;
-				$y2 = $y1 + $watermark_height;
+				$x1 = intval($file_width / 2 - $watermark_width / 2); //得到居中水印的左边坐标;
+				$y1 = intval($file_height / 2 - $watermark_height / 2); //得到居中水印的上边坐标
+				$y_base = intval($file_height / 2 + $watermark_height / 2); //得到左下角基线左边近似值
+				$x2 = intval($x1 + $watermark_width);
+				$y2 = intval($y1 + $watermark_height);
 				//居中画一个80x15的水印背景
 				if ($this->watermark_background)
 				{
@@ -530,10 +583,10 @@ class FileBase
 				$watermark_width = $watermark_image[0];
 				$watermark_height = $watermark_image[1];
 				$watermark_type = $watermark_image[2];
-				$x1 = $file_width / 2 - $watermark_width / 2; //得到居中水印的左边坐标;
-				$y1 = $file_height / 2 - $watermark_height / 2; //得到居中水印的上边坐标
-				$x2 = $x1 + $watermark_width;
-				$y2 = $y1 + $watermark_height;
+				$x1 = intval($file_width / 2 - $watermark_width / 2); //得到居中水印的左边坐标;
+				$y1 = intval($file_height / 2 - $watermark_height / 2); //得到居中水印的上边坐标
+				$x2 = intval($x1 + $watermark_width);
+				$y2 = intval($y1 + $watermark_height);
 				if ($watermark_type == 3)
 				{
 					$simage1 = imagecreatefrompng($image);
