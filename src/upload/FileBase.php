@@ -325,6 +325,7 @@ class FileBase
 	 */
 	public function save()
 	{
+		error_reporting(E_ERROR);
 		$this->completeFilePath = Filesystem::disk('public')->putFile('upload', $this->file);
 		$this->completeFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
 		// $this->completeFileUrl = request()->domain() . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
@@ -365,6 +366,7 @@ class FileBase
 	}
 	private function createThumbImage($file, $ext)
 	{
+		error_reporting(E_ERROR);
 		$mimeType = $this->file->getOriginalMime();
 		if ($file)
 		{
@@ -424,6 +426,7 @@ class FileBase
 	 */
 	private function resizeImage($im, $file, $mimeType = 'jpeg')
 	{
+		error_reporting(E_ERROR);
 		$width = imagesx($im);
 		$height = imagesy($im);
 		$maxwidth = $this->image_thumb_width;
@@ -505,6 +508,7 @@ class FileBase
 
 	private function addWaterMark($file)
 	{
+		error_reporting(E_ERROR);
 		// $mimeType = $this->file->getOriginalMime();
 		$file_width = 0;
 		$file_height = 0;
