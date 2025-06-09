@@ -471,8 +471,12 @@ class FileBase
 			if (function_exists('imagecopyresampled'))
 			{
 				$newim = imagecreatetruecolor($newwidth, $newheight);
-				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
 				imagesavealpha($newim, true); //不要丢了$resize_im图像的透明色;
+				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
+						//新增两行解决png图片背景发黑问题
+			$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127); // 设置透明背景色
+			imagefill($newim, 0, 0, $transparent); // 填充透明背景色
+			
 				imagecopyresampled($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 			}
 			else
