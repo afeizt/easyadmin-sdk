@@ -4,7 +4,7 @@ namespace MockApp\controllerV2;
 
 
 use EasyAdmin\annotation\ControllerAnnotation;
-use EasyAdmin\annotation\NodeAnotation;
+use EasyAdmin\annotation\NodeAnnotation;
 use MockApp\BaseController;
 
 /**
@@ -15,36 +15,36 @@ use MockApp\BaseController;
 class CateController extends BaseController
 {
 
-    /**
-     * @NodeAnotation(title="列表")
-     */
-    public function index()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="列表")
+	 */
+	public function index()
+	{
+		var_dump(__METHOD__);
+	}
 
-    /**
-     * @NodeAnotation(title="修改")
-     */
-    public function edit()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="修改")
+	 */
+	public function edit()
+	{
+		var_dump(__METHOD__);
+	}
 
-    /**
-     * @NodeAnotation(title="详情")
-     */
-    public function detail()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="详情")
+	 */
+	public function detail()
+	{
+		var_dump(__METHOD__);
+	}
 
-    /**
-     * @NodeAnotation(title="新增")
-     */
-    public function add()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="新增")
+	 */
+	public function add()
+	{
+		var_dump(__METHOD__);
+	}
 
 }

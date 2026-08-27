@@ -16,8 +16,9 @@ use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\AnnotationRegistry;
 use Doctrine\Common\Annotations\FileCacheReader;
 use EasyAdmin\annotation\ControllerAnnotation;
-use EasyAdmin\annotation\NodeAnotation;
+use EasyAdmin\annotation\NodeAnnotation;
 use EasyAdmin\tool\CommonTool;
+use SebastianBergmann\Environment\Runtime;
 
 /**
  * 节点处理类
@@ -35,7 +36,7 @@ class Node
 	/**
 	 * @var 命名空间前缀
 	 */
-	protected $namespacePrefix;
+
 
 	/**
 	 * 注解缓存地址
@@ -48,17 +49,19 @@ class Node
 	 * @var bool
 	 */
 	protected $annotationDebug = true;
-
+	protected $namespacePrefix = '';//命名空间前缀,在tp里传入"app\admin\controller"
 	/**
 	 * 构造方法
 	 * Node constructor.
 	 */
-	public function __construct()
+	public function __construct(string $baseDir, string $annotationCacheDir, string $namespacePrefix)
 	{
-		$this->dir = base_path() . 'admin' . DIRECTORY_SEPARATOR . 'controller';
-		$this->annotationCacheDir = runtime_path() . 'annotation' . DIRECTORY_SEPARATOR . 'node';
-		$this->namespacePrefix = "app\admin\controller";
-		return $this;
+
+		$this->dir = $baseDir;
+		$this->annotationCacheDir = $annotationCacheDir;
+		$this->namespacePrefix = $namespacePrefix;
+
+
 	}
 
 	/**
@@ -66,7 +69,7 @@ class Node
 	 * @param $dir
 	 * @return $this
 	 */
-	public function setDir($dir)
+	public function setDir(string $dir)
 	{
 		$this->dir = $dir;
 		return $this;
@@ -78,7 +81,7 @@ class Node
 	 * @param $namespacePrefix
 	 * @return $this
 	 */
-	public function setNamespacePrefix($namespacePrefix)
+	public function setNamespacePrefix(string $namespacePrefix)
 	{
 		$this->namespacePrefix = $namespacePrefix;
 		return $this;
@@ -89,7 +92,7 @@ class Node
 	 * @param $annotationCacheDir
 	 * @return $this
 	 */
-	public function setAnnotationCacheDir($annotationCacheDir)
+	public function setAnnotationCacheDir(string $annotationCacheDir)
 	{
 		$this->annotationCacheDir = $annotationCacheDir;
 		return $this;
@@ -131,17 +134,17 @@ class Node
 				// 遍历读取所有方法的注释的参数信息
 				foreach ($methods as $method)
 				{
-					// 读取NodeAnotation的注解
-					$nodeAnnotation = $reader->getMethodAnnotation($method, NodeAnotation::class);
+					// 读取NodeAnnotation的注解
+					$nodeAnnotation = $reader->getMethodAnnotation($method, NodeAnnotation::class);
 					if (!empty($nodeAnnotation) && !empty($nodeAnnotation->title))
 					{
 						$actionTitle = !empty($nodeAnnotation) && !empty($nodeAnnotation->title) ? $nodeAnnotation->title : null;
 						$actionAuth = !empty($nodeAnnotation) && !empty($nodeAnnotation->auth) ? $nodeAnnotation->auth : false;
 						$actionList[] = [
-							'node' => $controllerFormat . '/' . $method->name,
-							'title' => $actionTitle,
-							'is_auth' => $actionAuth,
-							'type' => 2,
+						 'node' => $controllerFormat . '/' . $method->name,
+						 'title' => $actionTitle,
+						 'is_auth' => $actionAuth,
+						 'type' => 2,
 						];
 					}
 				}
@@ -154,10 +157,10 @@ class Node
 					$controllerTitle = !empty($controllerAnnotation) && !empty($controllerAnnotation->title) ? $controllerAnnotation->title : null;
 					$controllerAuth = !empty($controllerAnnotation) && !empty($controllerAnnotation->auth) ? $controllerAnnotation->auth : false;
 					$nodeList[] = [
-						'node' => $controllerFormat,
-						'title' => $controllerTitle,
-						'is_auth' => $controllerAuth,
-						'type' => 1,
+					 'node' => $controllerFormat,
+					 'title' => $controllerTitle,
+					 'is_auth' => $controllerAuth,
+					 'type' => 1,
 					];
 					$nodeList = array_merge($nodeList, $actionList);
 				}
@@ -211,6 +214,8 @@ class Node
 				$className = str_replace('.php', '', $file);
 
 				$controllerFormat = $middleDir ? str_replace('\\', '.', $middleDir) . CommonTool::humpToLine(lcfirst($className)) : CommonTool::humpToLine(lcfirst($className));
+				// 添加到返回列表
+				$list[$controllerFormat] = $this->namespacePrefix . '\\' . ($middleDir ?: '') . $className;
 			}
 		}
 		return $list;
