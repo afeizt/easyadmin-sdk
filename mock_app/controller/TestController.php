@@ -3,7 +3,7 @@
 namespace MockApp\controller;
 
 use EasyAdmin\annotation\ControllerAnnotation;
-use EasyAdmin\annotation\NodeAnotation;
+use EasyAdmin\annotation\NodeAnnotation;
 use MockApp\BaseController;
 
 
@@ -15,21 +15,21 @@ use MockApp\BaseController;
 class TestController extends BaseController
 {
 
-    /**
-     * @NodeAnotation(title="列表")
-     */
-    public function index()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="列表")
+	 */
+	public function index()
+	{
+		var_dump(__METHOD__);
+	}
 
-    /**
-     * @NodeAnotation(title="详情")
-     */
-    public function details()
-    {
-        var_dump(__METHOD__);
-    }
+	/**
+	 * @NodeAnnotation(title="详情")
+	 */
+	public function details()
+	{
+		var_dump(__METHOD__);
+	}
 
 
 }

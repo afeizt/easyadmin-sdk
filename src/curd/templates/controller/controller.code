@@ -4,7 +4,7 @@ namespace {{controllerNamespace}};
 
 use app\common\controller\AdminController;
 use EasyAdmin\annotation\ControllerAnnotation;
-use EasyAdmin\annotation\NodeAnotation;
+use EasyAdmin\annotation\NodeAnnotation;
 use think\App;
 
 /**
