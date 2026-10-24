@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
+
 namespace EasyAdmin\upload;
 
 use EasyAdmin\upload\driver\Alioss;
@@ -55,9 +64,8 @@ class Uploadfile
 	 */
 	public static function instance()
 	{
-		if (is_null(self::$instance))
-		{
-			self::$instance = new static ();
+		if (is_null(self::$instance)) {
+			self::$instance = new static();
 		}
 
 		return self::$instance;
@@ -127,37 +135,30 @@ class Uploadfile
 	public function save()
 	{
 		$obj = null;
-		if ($this->uploadType == 'local')
-		{
+		if ($this->uploadType == 'local') {
 			$obj = new Local();
-		}
-		elseif ($this->uploadType == 'alioss')
-		{
+		} elseif ($this->uploadType == 'alioss') {
 			$obj = new Alioss();
-		}
-		elseif ($this->uploadType == 'qnoss')
-		{
+		} elseif ($this->uploadType == 'qnoss') {
 			$obj = new Qnoss();
-		}
-		elseif ($this->uploadType == 'txcos')
-		{
+		} elseif ($this->uploadType == 'txcos') {
 			$obj = new Txcos();
 		}
 		$save = $obj->setUploadConfig($this->uploadConfig)
-		 ->setUploadType($this->uploadType)
-		 ->setWaterMarkImage($this->uploadConfig['watermark_image'] ?? '')
-		 ->setWaterMarkType($this->uploadConfig['watermark_type'] ?? 0)
-		 ->setWatermarkTextSize($this->uploadConfig['watermark_text_size'] ?? 5)
-		 ->setWaterMarkContent($this->uploadConfig['watermark_text'] ?? '')
-		 ->setAddWatermark($this->uploadConfig['add_watermark'] ?? 0)
-		 ->setTableName($this->tableName)
-		 ->setImageThumb($this->uploadConfig['image_thumb'] ?? 0)
-		 ->setImageThumbWidth($this->uploadConfig['image_thumb_width'] ?? 500)
-		 ->setImageThumbHeight($this->uploadConfig['image_thumb_height'] ?? 500)
-		 ->setFile($this->file)
-		 ->setUploadFullPath($this->uploadConfig['upload_full_path'] ?? 0)
-		 ->setUploadCustomDomain($this->uploadConfig['upload_custom_domain'] ?? '')
-		 ->save();
+			->setUploadType($this->uploadType)
+			->setWaterMarkImage($this->uploadConfig['watermark_image'] ?? '')
+			->setWaterMarkType($this->uploadConfig['watermark_type'] ?? 0)
+			->setWatermarkTextSize($this->uploadConfig['watermark_text_size'] ?? 5)
+			->setWaterMarkContent($this->uploadConfig['watermark_text'] ?? '')
+			->setAddWatermark($this->uploadConfig['add_watermark'] ?? 0)
+			->setTableName($this->tableName)
+			->setImageThumb($this->uploadConfig['image_thumb'] ?? 0)
+			->setImageThumbWidth($this->uploadConfig['image_thumb_width'] ?? 500)
+			->setImageThumbHeight($this->uploadConfig['image_thumb_height'] ?? 500)
+			->setFile($this->file)
+			->setUploadFullPath($this->uploadConfig['upload_full_path'] ?? 0)
+			->setUploadCustomDomain($this->uploadConfig['upload_custom_domain'] ?? '')
+			->save();
 
 		return $save;
 	}

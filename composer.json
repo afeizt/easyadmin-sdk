@@ -1,18 +1,17 @@
 {
 	"name": "mycm/easyadmin-sdk",
-	"description": "EasyAdmin工具，https://github.com/zhongshaofa/easyadmin-sdk修改版",
+	"description": "EasyAdmin SDK - 基于 PHP 注解的权限节点管理与文件上传工具包",
 	"type": "library",
 	"license": "MIT",
 	"authors": [
 		{
 			"name": "mycm",
-			"email": "afeizt@163.com"
+			"email": "afeizt@hotmail.com"
 		}
 	],
 	"minimum-stability": "stable",
 	"require": {
 		"php": ">=7.1.0",
-		"doctrine/annotations": "^1.13.1",
 		"ext-json": "*"
 	},
 	"require-dev": {
@@ -22,7 +21,6 @@
 	"autoload": {
 		"psr-4": {
 			"EasyAdmin\\": "src",
-			"MockApp\\": "mock_app",
 			"Test\\": "tests"
 		}
 	},

@@ -1,6 +1,12 @@
 <?php
 
-
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
 
 namespace EasyAdmin\upload;
 
@@ -333,12 +339,10 @@ class FileBase
 		$ext = $this->file->extension();
 		$image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
 
-		if ($this->add_watermark && in_array($ext, $image_exts))
-		{
+		if ($this->add_watermark && in_array($ext, $image_exts)) {
 			$this->addWaterMark($this->completeFilePath);
 		}
-		if ($this->image_thumb && in_array($ext, $image_exts))
-		{
+		if ($this->image_thumb && in_array($ext, $image_exts)) {
 			$this->completeThumbFilePath = $this->createThumbImage($this->completeFilePath, $ext);
 			$this->completeThumbFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
 			$this->completeThumbFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
@@ -346,21 +350,16 @@ class FileBase
 	}
 	private function getUrlPrefix()
 	{
-		if ($this->upload_custom_domain != '' && $this->upload_full_path == true)
-		{
+		if ($this->upload_custom_domain != '' && $this->upload_full_path == true) {
 			$match = preg_match('/http?:\/\//', $this->upload_custom_domain);
 			if (!$match)
 				$this->setUploadCustomDomain('//' . $this->upload_custom_domain);
 			if (strripos($this->upload_custom_domain, '/') < strlen($this->upload_custom_domain) - 1)
 				$this->setUploadCustomDomain($this->upload_custom_domain . '/');
 			return $this->upload_custom_domain;
-		}
-		elseif ($this->upload_full_path == true)
-		{
+		} elseif ($this->upload_full_path == true) {
 			return request()->domain() . '/';
-		}
-		else
-		{
+		} else {
 			return '/';
 		}
 	}
@@ -368,36 +367,25 @@ class FileBase
 	{
 		error_reporting(E_ERROR);
 		$mimeType = $this->file->getOriginalMime();
-		if ($file)
-		{
-			if ($mimeType == 'image/pjpeg' || $mimeType == 'image/jpeg')
-			{
+		if ($file) {
+			if ($mimeType == 'image/pjpeg' || $mimeType == 'image/jpeg') {
 				$imgtype = 'jpeg';
 				$im = imagecreatefromjpeg($file);
-			}
-			elseif ($mimeType == 'image/x-png' || $mimeType == 'image/png')
-			{
+			} elseif ($mimeType == 'image/x-png' || $mimeType == 'image/png') {
 				$imgtype = 'png';
 				$im = imagecreatefrompng($file);
 				imagesavealpha($im, true); //这里很重要;
-			}
-			elseif ($mimeType == 'image/gif')
-			{
+			} elseif ($mimeType == 'image/gif') {
 				$imgtype = 'gif';
 				$im = imagecreatefromgif($file);
 				imagesavealpha($im, true); //这里很重要;
-			}
-			elseif ($mimeType == 'image/webp')
-			{
+			} elseif ($mimeType == 'image/webp') {
 				$imgtype = 'webp';
 				$im = imagecreatefromwebp($file);
-			}
-			else
-			{
+			} else {
 				return false; //非图片
 			}
-			if (!empty($im))
-			{
+			if (!empty($im)) {
 				$thumb_name = $this->getThumbName($file, $ext);
 				$this->resizeImage($im, $thumb_name, $mimeType);
 				imagedestroy($im);
@@ -431,81 +419,60 @@ class FileBase
 		$height = imagesy($im);
 		$maxwidth = $this->image_thumb_width;
 		$maxheight = $this->image_thumb_height;
-		if (($maxwidth && $width > $maxwidth) || ($maxheight && $height > $maxheight))
-		{
+		if (($maxwidth && $width > $maxwidth) || ($maxheight && $height > $maxheight)) {
 			$RESIZEWIDTH = false;
 			$RESIZEHEIGHT = false;
-			if ($maxwidth && $width > $maxwidth)
-			{
+			if ($maxwidth && $width > $maxwidth) {
 				$widthratio = $maxwidth / $width;
 				$RESIZEWIDTH = true;
 			}
-			if ($maxheight && $height > $maxheight)
-			{
+			if ($maxheight && $height > $maxheight) {
 				$heightratio = $maxheight / $height;
 				$RESIZEHEIGHT = true;
 			}
-			if ($RESIZEWIDTH && $RESIZEHEIGHT)
-			{
-				if ($widthratio < $heightratio)
-				{
+			if ($RESIZEWIDTH && $RESIZEHEIGHT) {
+				if ($widthratio < $heightratio) {
 					$ratio = $widthratio;
-				}
-				else
-				{
+				} else {
 					$ratio = $heightratio;
 				}
-			}
-			elseif ($RESIZEWIDTH)
-			{
+			} elseif ($RESIZEWIDTH) {
 				$ratio = $widthratio;
-			}
-			elseif ($RESIZEHEIGHT)
-			{
+			} elseif ($RESIZEHEIGHT) {
 				$ratio = $heightratio;
 			}
 
 			$newwidth = intval($width * $ratio);
 			$newheight = intval($height * $ratio);
 			imagesavealpha($im, true);
-			if (function_exists('imagecopyresampled'))
-			{
+			if (function_exists('imagecopyresampled')) {
 				$newim = imagecreatetruecolor($newwidth, $newheight);
 				imagesavealpha($newim, true); //不要丢了$resize_im图像的透明色;
 				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
-						//新增两行解决png图片背景发黑问题
-			$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127); // 设置透明背景色
-			imagefill($newim, 0, 0, $transparent); // 填充透明背景色
-			
+				//新增两行解决png图片背景发黑问题
+				$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127); // 设置透明背景色
+				imagefill($newim, 0, 0, $transparent); // 填充透明背景色
+
 				imagecopyresampled($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
-			}
-			else
-			{
+			} else {
 				$newim = imagecreate($newwidth, $newheight);
 				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
 				imagesavealpha($newim, true); //不要丢了$resize_im图像的透明色;
 				imagecopyresized($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 			}
-			if ($mimeType == 'image/png')
-			{
+			if ($mimeType == 'image/png') {
 				imagepng($newim, $file);
-			}
-			elseif ($mimeType == 'image/gif')
-			{
+			} elseif ($mimeType == 'image/gif') {
 				$color = imagecolorallocate($newim, 255, 255, 255); //解决gif背景黑色问题
 				imagecolortransparent($newim, $color); //解决gif背景黑色问题
 				imagefill($newim, 0, 0, $color); //解决gif背景黑色问题
 				imagegif($newim, $file);
-			}
-			else
-			{
+			} else {
 				imagejpeg($newim, $file);
 			}
 
 			imagedestroy($newim);
-		}
-		else
-		{
+		} else {
 			imagejpeg($im, $file);
 		}
 	}
@@ -519,8 +486,7 @@ class FileBase
 		$file_size = $this->file->getSize();
 
 		$iinfo = getimagesize($file, $iinfo);
-		if (empty($iinfo))
-		{
+		if (empty($iinfo)) {
 			return;
 		} //非图片
 		$file_width = $iinfo[0];
@@ -531,8 +497,7 @@ class FileBase
 		$black = imagecolorallocate($nimage, 0, 0, 0);
 		$red = imagecolorallocate($nimage, 255, 0, 0);
 		imagefill($nimage, 0, 0, $white);
-		switch ($iinfo[2])
-		{
+		switch ($iinfo[2]) {
 			case 1:
 				$simage = imagecreatefromgif($file);
 				break;
@@ -558,8 +523,7 @@ class FileBase
 
 
 		// $fontv = imageloadfont($font_url);
-		switch ($watermark_type)
-		{
+		switch ($watermark_type) {
 			case 'text': //加水印字符串
 				$watermark_text = $this->watermark_string;
 				$watermark_text_count = strlen($watermark_text);
@@ -577,8 +541,7 @@ class FileBase
 				$x2 = intval($x1 + $watermark_width);
 				$y2 = intval($y1 + $watermark_height);
 				//居中画一个80x15的水印背景
-				if ($this->watermark_background)
-				{
+				if ($this->watermark_background) {
 					imagefilledrectangle($nimage, $x1, $y1, $x2, $y2, $white);
 				}
 
@@ -595,28 +558,17 @@ class FileBase
 				$y1 = intval($file_height / 2 - $watermark_height / 2); //得到居中水印的上边坐标
 				$x2 = intval($x1 + $watermark_width);
 				$y2 = intval($y1 + $watermark_height);
-				if ($watermark_type == 3)
-				{
+				if ($watermark_type == 3) {
 					$simage1 = imagecreatefrompng($image);
-				}
-				elseif ($watermark_type == 1)
-				{
+				} elseif ($watermark_type == 1) {
 					$simage1 = imagecreatefromgif($image);
-				}
-				elseif ($watermark_type == 2)
-				{
+				} elseif ($watermark_type == 2) {
 					$simage1 = imagecreatefromjpeg($image);
-				}
-				elseif ($watermark_type == 6)
-				{
+				} elseif ($watermark_type == 6) {
 					$simage1 = imagecreatefromwbmp($image);
-				}
-				elseif ($watermark_type == 18)
-				{
+				} elseif ($watermark_type == 18) {
 					$simage1 = imagecreatefromwebp($image);
-				}
-				else
-				{
+				} else {
 					break;
 				}
 
@@ -626,8 +578,7 @@ class FileBase
 		}
 
 		//生成水印覆盖原上传文件
-		switch ($iinfo[2])
-		{
+		switch ($iinfo[2]) {
 			case 1:
 				//imagegif($nimage, $destination);
 				imagejpeg($nimage, $file);
@@ -656,16 +607,12 @@ class FileBase
 	 */
 	public function rmLocalSave()
 	{
-		try
-		{
+		try {
 			$rm = unlink($this->completeFilePath);
-			if (!empty($this->completeThumbFilePath))
-			{
+			if (!empty($this->completeThumbFilePath)) {
 				unlink($this->completeThumbFilePath);
 			}
-		}
-		catch (\Exception $e)
-		{
+		} catch (\Exception $e) {
 			return $e->getMessage();
 		}
 

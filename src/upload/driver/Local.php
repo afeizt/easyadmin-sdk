@@ -1,6 +1,12 @@
 <?php
 
-
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
 
 namespace EasyAdmin\upload\driver;
 
@@ -13,29 +19,29 @@ use EasyAdmin\upload\trigger\SaveDb;
  */
 class Local extends FileBase
 {
-    /**
-     * 重写上传方法.
-     *
-     * @return array|void
-     */
-    public function save()
-    {
-        parent::save();
-        SaveDb::trigger($this->tableName, [
-            'upload_type' => $this->uploadType,
-            'original_name' => $this->file->getOriginalName(),
-            'mime_type' => $this->file->getOriginalMime(),
-            'file_ext' => strtolower($this->file->getOriginalExtension()),
-            'url' => $this->completeFileUrl,
-            'thumb_url' => $this->completeThumbFileUrl,
-            'create_time' => time(),
-        ]);
+	/**
+	 * 重写上传方法.
+	 *
+	 * @return array|void
+	 */
+	public function save()
+	{
+		parent::save();
+		SaveDb::trigger($this->tableName, [
+			'upload_type' => $this->uploadType,
+			'original_name' => $this->file->getOriginalName(),
+			'mime_type' => $this->file->getOriginalMime(),
+			'file_ext' => strtolower($this->file->getOriginalExtension()),
+			'url' => $this->completeFileUrl,
+			'thumb_url' => $this->completeThumbFileUrl,
+			'create_time' => time(),
+		]);
 
-        return [
-            'save' => true,
-            'msg' => '上传成功',
-            'url' => $this->completeFileUrl,
-            'thumb_url' => $this->completeThumbFileUrl,
-        ];
-    }
+		return [
+			'save' => true,
+			'msg' => '上传成功',
+			'url' => $this->completeFileUrl,
+			'thumb_url' => $this->completeThumbFileUrl,
+		];
+	}
 }
