@@ -27,7 +27,7 @@ class SaveDb
 	 * @param string $tableName 数据表名
 	 * @param array  $data      文件数据
 	 */
-	public static function trigger($tableName, $data)
+	public static function trigger(string $tableName, array $data): void
 	{
 		Db::name($tableName)->save($data);
 	}

@@ -24,7 +24,7 @@ class FileBase
 	 *
 	 * @var array
 	 */
-	protected $uploadConfig;
+	protected array $uploadConfig;
 
 	/**
 	 * 上传文件对象
@@ -33,34 +33,34 @@ class FileBase
 	 */
 	protected $file;
 
-	protected $watermark_text_size = 50;
+	protected int $watermark_text_size = 50;
 	/**
 	 * 上传完成的文件路径.
 	 *
 	 * @var string
 	 */
-	protected $completeFilePath;
+	protected string $completeFilePath;
 
 	/**
 	 * 上传完成的文件的URL.
 	 *
 	 * @var string
 	 */
-	protected $completeFileUrl;
+	protected string $completeFileUrl;
 
 	/**
 	 * completeThumbFilePath.
 	 *
-	 * @var mixed
+	 * @var string|null
 	 */
-	protected $completeThumbFilePath;
+	protected ?string $completeThumbFilePath = null;
 
 	/**
 	 * completeThumbFileUrl传完成的缩略图文件的URL.
 	 *
-	 * @var mixed
+	 * @var string|null
 	 */
-	protected $completeThumbFileUrl;
+	protected ?string $completeThumbFileUrl = null;
 	/**
 	 * 保存上传文件的数据表.
 	 *
@@ -84,21 +84,21 @@ class FileBase
 	/**
 	 * image_thumb_width缩略图最大宽度.
 	 *
-	 * @var mixed
+	 * @var int|null
 	 */
-	protected $image_thumb_width;
+	protected ?int $image_thumb_width = null;
 	/**
 	 * image_thumb_height缩略图最大高度.
 	 *
-	 * @var mixed
+	 * @var int|null
 	 */
-	protected $image_thumb_height;
+	protected ?int $image_thumb_height = null;
 	/**
 	 * add_watermark是否启用水印.
 	 *
-	 * @var mixed
+	 * @var bool
 	 */
-	protected $add_watermark = false;
+	protected bool $add_watermark = false;
 	/**
 	 * watertype水印类型.
 	 *
@@ -145,7 +145,7 @@ class FileBase
 	 *
 	 * @return $this
 	 */
-	public function setImageThumb($value)
+	public function setImageThumb($value): self
 	{
 		$this->image_thumb = (bool)$value;
 
@@ -155,11 +155,11 @@ class FileBase
 	/**
 	 * setImageThumbWidth设置缩略图宽度.
 	 *
-	 * @param mixed $width
+	 * @param int $width
 	 *
 	 * @return $this
 	 */
-	public function setImageThumbWidth($width)
+	public function setImageThumbWidth(int $width): self
 	{
 		$this->image_thumb_width = $width;
 
@@ -169,11 +169,11 @@ class FileBase
 	/**
 	 * setImageThumbHeight设置缩略图高度.
 	 *
-	 * @param mixed $height
+	 * @param int $height
 	 *
 	 * @return $this
 	 */
-	public function setImageThumbHeight($height)
+	public function setImageThumbHeight(int $height): self
 	{
 		$this->image_thumb_height = $height;
 
@@ -183,11 +183,11 @@ class FileBase
 	/**
 	 * setWaterMarkBackground设置水印背景.
 	 *
-	 * @param mixed $value
+	 * @param mixed $color
 	 *
 	 * @return $this
 	 */
-	public function setWaterMarkBackground($color)
+	public function setWaterMarkBackground($color): self
 	{
 		$this->watermark_background = $color;
 
@@ -196,10 +196,10 @@ class FileBase
 	/**
 	 * setWatermarkTextSize设置水印文字大小
 	 *
-	 * @param  mixed $size
+	 * @param  int $size
 	 * @return $this
 	 */
-	public function setWatermarkTextSize($size)
+	public function setWatermarkTextSize(int $size): self
 	{
 		if ($size > 0)
 			$this->watermark_text_size = $size;
@@ -208,11 +208,11 @@ class FileBase
 	/**
 	 * setWaterMarkImage设置水印图片.
 	 *
-	 * @param mixed $value
+	 * @param string $image
 	 *
 	 * @return $this
 	 */
-	public function setWaterMarkImage($image)
+	public function setWaterMarkImage(string $image): self
 	{
 		$this->watermark_image = $image;
 
@@ -222,11 +222,11 @@ class FileBase
 	/**
 	 * setWaterMarkType设置水印类型.
 	 *
-	 * @param mixed $value
+	 * @param string $text
 	 *
 	 * @return $this
 	 */
-	public function setWaterMarkContent($text)
+	public function setWaterMarkContent(string $text): self
 	{
 		$this->watermark_string = $text;
 
@@ -236,11 +236,11 @@ class FileBase
 	/**
 	 * setWaterMarkType设置水印类型.
 	 *
-	 * @param mixed $value
+	 * @param string $value
 	 *
 	 * @return $this
 	 */
-	public function setWaterMarkType($value)
+	public function setWaterMarkType(string $value): self
 	{
 		$this->watermark_type = $value;
 
@@ -254,7 +254,7 @@ class FileBase
 	 *
 	 * @return $this
 	 */
-	public function setAddWatermark($value)
+	public function setAddWatermark($value): self
 	{
 		$this->add_watermark = (bool)$value;
 
@@ -264,22 +264,22 @@ class FileBase
 	/**
 	 * 设置上传方式.
 	 *
-	 * @param $value
+	 * @param string $value
 	 *
 	 * @return $this
 	 */
-	public function setUploadType($value)
+	public function setUploadType(string $value): self
 	{
 		$this->uploadType = $value;
 
 		return $this;
 	}
-	public function setUploadCustomDomain($value)
+	public function setUploadCustomDomain(string $value): self
 	{
 		$this->upload_custom_domain = $value;
 		return $this;
 	}
-	public function setUploadFullPath($value)
+	public function setUploadFullPath($value): self
 	{
 		$this->upload_full_path = (bool)$value;
 		return $this;
@@ -287,11 +287,11 @@ class FileBase
 	/**
 	 * 设置上传配置.
 	 *
-	 * @param $value
+	 * @param array $value
 	 *
 	 * @return $this
 	 */
-	public function setUploadConfig($value)
+	public function setUploadConfig(array $value): self
 	{
 		$this->uploadConfig = $value;
 
@@ -301,11 +301,11 @@ class FileBase
 	/**
 	 * 设置上传配置.
 	 *
-	 * @param $value
+	 * @param mixed $value
 	 *
 	 * @return $this
 	 */
-	public function setFile($value)
+	public function setFile($value): self
 	{
 		$this->file = $value;
 
@@ -315,11 +315,11 @@ class FileBase
 	/**
 	 * 设置保存文件数据表.
 	 *
-	 * @param $value
+	 * @param string $value
 	 *
 	 * @return $this
 	 */
-	public function setTableName($value)
+	public function setTableName(string $value): self
 	{
 		$this->tableName = $value;
 
@@ -327,28 +327,37 @@ class FileBase
 	}
 
 	/**
-	 * 保存文件.
+	 * 保存文件到本地磁盘
+	 *
+	 * 流程：写入磁盘 → 可选水印 → 可选缩略图。
+	 * 路径中的目录分隔符统一替换为 / 以保证跨平台兼容。
 	 */
-	public function save()
+	public function save(): void
 	{
 		error_reporting(E_ERROR);
 		$this->completeFilePath = Filesystem::disk('public')->putFile('upload', $this->file);
 		$this->completeFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
-		// $this->completeFileUrl = request()->domain() . '/' . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
 		$this->completeFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
 		$ext = $this->file->extension();
 		$image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
 
+		// 仅对常见图片格式添加水印
 		if ($this->add_watermark && in_array($ext, $image_exts)) {
 			$this->addWaterMark($this->completeFilePath);
 		}
+		// 仅对常见图片格式生成缩略图
 		if ($this->image_thumb && in_array($ext, $image_exts)) {
 			$this->completeThumbFilePath = $this->createThumbImage($this->completeFilePath, $ext);
 			$this->completeThumbFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
 			$this->completeThumbFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
 		}
 	}
-	private function getUrlPrefix()
+	/**
+	 * 根据上传配置拼接文件访问 URL 前缀
+	 *
+	 * 优先级：自定义域名 + 完整路径 > 当前域名完整路径 > 相对路径 /
+	 */
+	private function getUrlPrefix(): string
 	{
 		if ($this->upload_custom_domain != '' && $this->upload_full_path == true) {
 			$match = preg_match('/http?:\/\//', $this->upload_custom_domain);
@@ -363,7 +372,17 @@ class FileBase
 			return '/';
 		}
 	}
-	private function createThumbImage($file, $ext)
+	/**
+	 * 根据原图生成缩略图
+	 *
+	 * 按 mime 类型调用对应 GD 函数创建图像资源，等比缩放后保存。
+	 * 文件名规则：原文件名后加 _thumb 后缀（由 getThumbName 生成）。
+	 *
+	 * @param string $file 原图完整路径
+	 * @param string $ext  文件扩展名
+	 * @return string|false 缩略图路径，非图片格式返回 false
+	 */
+	private function createThumbImage(string $file, string $ext)
 	{
 		error_reporting(E_ERROR);
 		$mimeType = $this->file->getOriginalMime();
@@ -395,7 +414,12 @@ class FileBase
 		return $thumb_name;
 	}
 
-	private function getThumbName($file, $ext)
+	/**
+	 * 生成缩略图文件名（原文件名 + _thumb 后缀）
+	 *
+	 * 例如：/upload/202310/abc.jpg → /upload/202310/abc_thumb.jpg
+	 */
+	private function getThumbName(string $file, string $ext): string
 	{
 		$index = strpos($file, $ext);
 		$basename = substr($file, 0, $index - 1);
@@ -404,15 +428,16 @@ class FileBase
 	}
 
 	/**
-	 * resizeImage.
+	 * 等比缩放图片并保存
 	 *
-	 * @param mixed $im原图句柄
-	 * @param mixed $file
-	 * @param mixed $mimeType
+	 * 根据设定的最大宽高（image_thumb_width / image_thumb_height）计算缩放比例，
+	 * 取宽高比例中较小值保证图片不超出限定范围。处理透明通道避免 PNG/GIF 背景变黑。
 	 *
-	 * @return void
+	 * @param \GdImage $im       GD 图像资源句柄
+	 * @param string   $file     输出文件路径
+	 * @param string   $mimeType 输出 mime 类型（影响 imagepng/imagejpeg 选择）
 	 */
-	private function resizeImage($im, $file, $mimeType = 'jpeg')
+	private function resizeImage($im, string $file, string $mimeType = 'jpeg'): void
 	{
 		error_reporting(E_ERROR);
 		$width = imagesx($im);
@@ -477,10 +502,17 @@ class FileBase
 		}
 	}
 
-	private function addWaterMark($file)
+	/**
+	 * 为图片添加水印
+	 *
+	 * 支持文字水印和图片水印两种模式，水印居中放置。
+	 * 文字水印使用 TrueType 字体，可选半透明背景底板。
+	 *
+	 * @param string $file 待处理的原图路径（处理后会直接覆盖原文件）
+	 */
+	private function addWaterMark(string $file): void
 	{
 		error_reporting(E_ERROR);
-		// $mimeType = $this->file->getOriginalMime();
 		$file_width = 0;
 		$file_height = 0;
 		$file_size = $this->file->getSize();
@@ -605,7 +637,7 @@ class FileBase
 	 *
 	 * @return bool|string
 	 */
-	public function rmLocalSave()
+	public function rmLocalSave(): bool|string
 	{
 		try {
 			$rm = unlink($this->completeFilePath);

@@ -1,224 +1,146 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | EasyAdmin
-// +----------------------------------------------------------------------
-// | PHP交流群: 763822524
-// +----------------------------------------------------------------------
-// | 开源协议  https://mit-license.org 
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zhongshaofa/EasyAdmin
-// +----------------------------------------------------------------------
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
 
 namespace EasyAdmin\auth;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\AnnotationRegistry;
-use Doctrine\Common\Annotations\FileCacheReader;
 use EasyAdmin\annotation\ControllerAnnotation;
 use EasyAdmin\annotation\NodeAnnotation;
-use EasyAdmin\tool\CommonTool;
-
+use Mycm\Annotations\Scanner;
 
 /**
  * 节点处理类
- * Class Node
- * @package EasyAdmin\auth
  */
 class Node
 {
 
-	/**
-	 * @var 当前文件夹
-	 */
-	protected $dir;
+	private string $dir;
+
+	private string $namespacePrefix = '';
+
+	private string $authFieldName = 'auth';
+
+	private ?Scanner $scanner = null;
 
 	/**
-	 * @var 命名空间前缀
+	 * @param string $baseDir           控制器目录绝对路径
+	 * @param string $namespacePrefix    命名空间前缀，如 "app\admin\controller"
+	 * @param string $annotationCacheDir 已废弃，保留兼容旧调用
 	 */
-
-
-	/**
-	 * 注解缓存地址
-	 * @var string
-	 */
-	protected $annotationCacheDir;
-
-	/**
-	 * 注解debug，建议常开
-	 * @var bool
-	 */
-	protected $annotationDebug = true;
-	protected $namespacePrefix = '';//命名空间前缀,在tp里传入"app\admin\controller"
-	/**
-	 * 构造方法
-	 * Node constructor.
-	 */
-	public function __construct(string $baseDir, string $annotationCacheDir, string $namespacePrefix)
+	public function __construct(string $baseDir, string $namespacePrefix = '', string $annotationCacheDir = '')
 	{
-
 		$this->dir = $baseDir;
-		$this->annotationCacheDir = $annotationCacheDir;
 		$this->namespacePrefix = $namespacePrefix;
-
-
 	}
 
-	/**
-	 * 设置当前文件夹
-	 * @param $dir
-	 * @return $this
-	 */
-	public function setDir(string $dir)
+	public function setDir(string $dir): static
 	{
 		$this->dir = $dir;
 		return $this;
 	}
 
-
-	/**
-	 * 设置命名空间前缀
-	 * @param $namespacePrefix
-	 * @return $this
-	 */
-	public function setNamespacePrefix(string $namespacePrefix)
+	public function setNamespacePrefix(string $namespacePrefix): static
 	{
 		$this->namespacePrefix = $namespacePrefix;
 		return $this;
 	}
 
 	/**
-	 * 设置注解缓存地址
-	 * @param $annotationCacheDir
-	 * @return $this
+	 * 已废弃，保留兼容旧调用
 	 */
-	public function setAnnotationCacheDir(string $annotationCacheDir)
+	public function setAnnotationCacheDir(string $annotationCacheDir): static
 	{
-		$this->annotationCacheDir = $annotationCacheDir;
 		return $this;
 	}
 
 	/**
-	 * 设置注解debug
-	 * @param $annotationDebug
-	 * @return $this
+	 * 已废弃，保留兼容旧调用
 	 */
-	public function setAnnotationDebug($annotationDebug = true)
+	public function setAnnotationDebug(bool $annotationDebug = true): static
 	{
-		$this->annotationDebug = $annotationDebug;
+		return $this;
+	}
+
+	/**
+	 * 设置注解中鉴权字段名（默认 "auth"，MyCm 默认 "is_auth"）
+	 */
+	public function setAuthFieldName(string $authFieldName): static
+	{
+		$this->authFieldName = $authFieldName;
 		return $this;
 	}
 
 	/**
 	 * 获取所有节点
-	 * @return array
-	 * @throws \Doctrine\Common\Annotations\AnnotationException
-	 * @throws \ReflectionException
 	 */
-	public function getNodelist()
+	public function getNodelist(): array
 	{
-		list($nodeList, $controllerList) = [[], $this->getControllerList()];
+		$controllers = $this->getScanner()->scan($this->dir, $this->buildScanOptions());
 
-		if (!empty($controllerList))
-		{
-			AnnotationRegistry::registerLoader('class_exists');
-			$reader = new FileCacheReader(new AnnotationReader(), $this->annotationCacheDir, $this->annotationDebug);
-			foreach ($controllerList as $controllerFormat => $controller)
-			{
+		$nodeList = [];
+		foreach ($controllers as $controller) {
+			if (empty($controller->nodes)) {
+				continue;
+			}
 
-				// 获取类和方法的注释信息
-				$reflectionClass = new \ReflectionClass($controller);
-				$methods = $reflectionClass->getMethods();
-				$actionList = [];
+			$nodeList[] = [
+				'node'    => $controller->controllerNode,
+				'title'   => $controller->title,
+				'is_auth' => true,
+				'type'    => 1,
+			];
 
-				// 遍历读取所有方法的注释的参数信息
-				foreach ($methods as $method)
-				{
-					// 读取NodeAnnotation的注解
-					$nodeAnnotation = $reader->getMethodAnnotation($method, NodeAnnotation::class);
-					if (!empty($nodeAnnotation) && !empty($nodeAnnotation->title))
-					{
-						$actionTitle = !empty($nodeAnnotation) && !empty($nodeAnnotation->title) ? $nodeAnnotation->title : null;
-						$actionAuth = !empty($nodeAnnotation) && !empty($nodeAnnotation->auth) ? $nodeAnnotation->auth : false;
-						$actionList[] = [
-						 'node' => $controllerFormat . '/' . $method->name,
-						 'title' => $actionTitle,
-						 'is_auth' => $actionAuth,
-						 'type' => 2,
-						];
-					}
-				}
-
-				// 方法非空才读取控制器注解
-				if (!empty($actionList))
-				{
-					// 读取Controller的注解
-					$controllerAnnotation = $reader->getClassAnnotation($reflectionClass, ControllerAnnotation::class);
-					$controllerTitle = !empty($controllerAnnotation) && !empty($controllerAnnotation->title) ? $controllerAnnotation->title : null;
-					$controllerAuth = !empty($controllerAnnotation) && !empty($controllerAnnotation->auth) ? $controllerAnnotation->auth : false;
-					$nodeList[] = [
-					 'node' => $controllerFormat,
-					 'title' => $controllerTitle,
-					 'is_auth' => $controllerAuth,
-					 'type' => 1,
-					];
-					$nodeList = array_merge($nodeList, $actionList);
-				}
-
+			foreach ($controller->nodes as $node) {
+				$nodeList[] = [
+					'node'    => $node->getNode(),
+					'title'   => $node->title,
+					'is_auth' => $node->isAuth,
+					'type'    => 2,
+				];
 			}
 		}
+
 		return $nodeList;
 	}
 
 	/**
 	 * 获取所有控制器
-	 * @return array
 	 */
-	public function getControllerList()
+	public function getControllerList(): array
 	{
-		return $this->readControllerFiles($this->dir);
-	}
+		$controllers = $this->getScanner()->scan($this->dir, $this->buildScanOptions());
 
-	/**
-	 * 遍历读取控制器文件
-	 * @param $path
-	 * @return array
-	 */
-	protected function readControllerFiles($path)
-	{
-		list($list, $temp_list, $dirExplode) = [[], scandir($path), explode($this->dir, $path)];
-		$middleDir = isset($dirExplode[1]) && !empty($dirExplode[1]) ? str_replace('/', '\\', substr($dirExplode[1], 1)) . "\\" : null;
-
-		foreach ($temp_list as $file)
-		{
-			// 排除根目录和没有开启注解的模块
-			if ($file == ".." || $file == ".")
-			{
-				continue;
-			}
-			if (is_dir($path . DIRECTORY_SEPARATOR . $file))
-			{
-				// 子文件夹，进行递归
-				$childFiles = $this->readControllerFiles($path . DIRECTORY_SEPARATOR . $file);
-				$list = array_merge($childFiles, $list);
-			}
-			else
-			{
-				// 判断是不是控制器
-				$fileExplodeArray = explode('.', $file);
-				if (count($fileExplodeArray) != 2 || end($fileExplodeArray) != 'php')
-				{
-					continue;
-				}
-				// 根目录下的文件
-				$className = str_replace('.php', '', $file);
-
-				$controllerFormat = $middleDir ? str_replace('\\', '.', $middleDir) . CommonTool::humpToLine(lcfirst($className)) : CommonTool::humpToLine(lcfirst($className));
-				// 添加到返回列表
-				$list[$controllerFormat] = $this->namespacePrefix . '\\' . ($middleDir ?: '') . $className;
-			}
+		$list = [];
+		foreach ($controllers as $controller) {
+			$list[$controller->controllerNode] = $controller->className;
 		}
 		return $list;
 	}
 
+	/**
+	 * 构建 Scanner 扫描选项，使用 EasyAdmin 自己的注解类
+	 */
+	private function buildScanOptions(): array
+	{
+		return [
+			'namespace_prefix'           => $this->namespacePrefix,
+			'controller_attribute_class' => ControllerAnnotation::class,
+			'node_attribute_class'       => NodeAnnotation::class,
+			'auth_field_name'            => $this->authFieldName,
+		];
+	}
+
+	private function getScanner(): Scanner
+	{
+		if ($this->scanner === null) {
+			$this->scanner = new Scanner();
+		}
+		return $this->scanner;
+	}
 }

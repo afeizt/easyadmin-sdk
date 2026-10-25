@@ -60,9 +60,9 @@ class Uploadfile
 	/**
 	 * 获取对象实例.
 	 *
-	 * @return Uploadfile|object
+	 * @return self
 	 */
-	public static function instance()
+	public static function instance(): self
 	{
 		if (is_null(self::$instance)) {
 			self::$instance = new static();
@@ -74,11 +74,11 @@ class Uploadfile
 	/**
 	 * 设置上传对象
 	 *
-	 * @param $value
+	 * @param mixed $value
 	 *
 	 * @return $this
 	 */
-	public function setFile($value)
+	public function setFile($value): self
 	{
 		$this->file = $value;
 
@@ -88,11 +88,11 @@ class Uploadfile
 	/**
 	 * 设置上传文件.
 	 *
-	 * @param $value
+	 * @param array $value
 	 *
 	 * @return $this
 	 */
-	public function setUploadConfig($value)
+	public function setUploadConfig(array $value): self
 	{
 		$this->uploadConfig = $value;
 
@@ -102,11 +102,11 @@ class Uploadfile
 	/**
 	 * 设置上传方式.
 	 *
-	 * @param $value
+	 * @param string $value
 	 *
 	 * @return $this
 	 */
-	public function setUploadType($value)
+	public function setUploadType(string $value): self
 	{
 		$this->uploadType = $value;
 
@@ -116,11 +116,11 @@ class Uploadfile
 	/**
 	 * 设置保存数据表.
 	 *
-	 * @param $value
+	 * @param string $value
 	 *
 	 * @return $this
 	 */
-	public function setTableName($value)
+	public function setTableName(string $value): self
 	{
 		$this->tableName = $value;
 
@@ -130,9 +130,9 @@ class Uploadfile
 	/**
 	 * 保存文件.
 	 *
-	 * @return array|void
+	 * @return array
 	 */
-	public function save()
+	public function save(): array
 	{
 		$obj = null;
 		if ($this->uploadType == 'local') {

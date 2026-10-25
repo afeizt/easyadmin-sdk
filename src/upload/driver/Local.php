@@ -22,9 +22,9 @@ class Local extends FileBase
 	/**
 	 * 重写上传方法.
 	 *
-	 * @return array|void
+	 * @return array
 	 */
-	public function save()
+	public function save(): array
 	{
 		parent::save();
 		SaveDb::trigger($this->tableName, [

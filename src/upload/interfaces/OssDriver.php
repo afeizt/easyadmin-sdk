@@ -25,5 +25,5 @@ interface OssDriver
 	 * @param string $filePath   本地文件路径
 	 * @return array
 	 */
-	public function save($objectName, $filePath);
+	public function save(string $objectName, string $filePath): array;
 }

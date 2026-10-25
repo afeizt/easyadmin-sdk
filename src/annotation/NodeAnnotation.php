@@ -1,44 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | EasyAdmin
-// +----------------------------------------------------------------------
-// | PHP交流群: 763822524
-// +----------------------------------------------------------------------
-// | 开源协议  https://mit-license.org 
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zhongshaofa/EasyAdmin
-// +----------------------------------------------------------------------
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
 
 namespace EasyAdmin\annotation;
 
+use Attribute;
 
-use Doctrine\Common\Annotations\Annotation\Attributes;
-
-/**
- * 创建节点注解类
- *
- * @Annotation
- * @Target({"METHOD","CLASS"})
- * @Attributes({
- *   @Attribute("time", type = "int")
- * })
- */
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS)]
 final class NodeAnnotation
 {
-
-	/**
-	 * 节点名称
-	 * @Required()
-	 * @var string
-	 */
-	public $title;
-
-	/**
-	 * 是否开启权限控制
-	 * @Enum({true,false})
-	 * @var bool
-	 */
-	public $auth = true;
-
+	public function __construct(
+		public string $title  = '',
+		public bool   $auth   = true,
+	) {}
 }

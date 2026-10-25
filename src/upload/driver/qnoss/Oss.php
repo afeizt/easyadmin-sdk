@@ -58,7 +58,7 @@ class Oss implements OssDriver
 	 *
 	 * @param array $config 七牛云配置
 	 */
-	public function __construct($config)
+	public function __construct(array $config)
 	{
 		$this->accessKey = $config['qnoss_access_key'];
 		$this->secretKey = $config['qnoss_secret_key'];
@@ -73,7 +73,7 @@ class Oss implements OssDriver
 	 * @param array $config 七牛云配置
 	 * @return static
 	 */
-	public static function instance($config)
+	public static function instance(array $config): self
 	{
 		if (is_null(self::$instance)) {
 			self::$instance = new static($config);
@@ -89,7 +89,7 @@ class Oss implements OssDriver
 	 * @param string $filePath   本地文件路径
 	 * @return array
 	 */
-	public function save($objectName, $filePath)
+	public function save(string $objectName, string $filePath): array
 	{
 		$token = $this->auth->uploadToken($this->bucket);
 		$uploadMgr = new UploadManager();

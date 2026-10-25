@@ -21,10 +21,10 @@ class CommonTool
 
 	/**
 	 * 下划线转驼峰
-	 * @param $str
-	 * @return null|string|string[]
+	 * @param string $str
+	 * @return string|null
 	 */
-	public static function lineToHump($str)
+	public static function lineToHump(string $str): ?string
 	{
 		$str = preg_replace_callback('/([-_]+([a-z]{1}))/i', function ($matches) {
 			return strtoupper($matches[2]);
@@ -34,10 +34,10 @@ class CommonTool
 
 	/**
 	 * 驼峰转下划线
-	 * @param $str
-	 * @return null|string|string[]
+	 * @param string $str
+	 * @return string|null
 	 */
-	public static function humpToLine($str)
+	public static function humpToLine(string $str): ?string
 	{
 		$str = preg_replace_callback('/([A-Z]{1})/', function ($matches) {
 			return '_' . strtolower($matches[0]);
@@ -46,10 +46,13 @@ class CommonTool
 	}
 
 	/**
-	 * 获取真实IP
-	 * @return mixed
+	 * 获取客户端真实 IP
+	 *
+	 * 依次检查 HTTP_X_FORWARDED_FOR / HTTP_CLIENT_IP / HTTP_CF_CONNECTING_IP / HTTP_X_REAL_IP，
+	 * 过滤内网地址后返回最外层公网 IP，用于透传代理/CDN 后的真实客户端地址。
+	 * @return string
 	 */
-	public static function getRealIp()
+	public static function getRealIp(): string
 	{
 		$ip = $_SERVER['REMOTE_ADDR'];
 		if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
@@ -71,11 +74,11 @@ class CommonTool
 
 	/**
 	 * 读取文件夹下的所有文件
-	 * @param $path
-	 * @param $basePath
-	 * @return array|mixed
+	 * @param string $path
+	 * @param string $basePath
+	 * @return array
 	 */
-	public static function readDirAllFiles($path, $basePath = '')
+	public static function readDirAllFiles(string $path, string $basePath = ''): array
 	{
 		list($list, $temp_list) = [[], scandir($path)];
 		empty($basePath) && $basePath = $path;
@@ -96,11 +99,11 @@ class CommonTool
 
 	/**
 	 * 模板值替换
-	 * @param $string
-	 * @param $array
-	 * @return mixed
+	 * @param string $string
+	 * @param array  $array
+	 * @return string
 	 */
-	public static function replaceTemplate($string, $array)
+	public static function replaceTemplate(string $string, array $array): string
 	{
 		foreach ($array as $key => $val) {
 			$string = str_replace("{{" . $key . "}}", $val, $string);

@@ -64,7 +64,7 @@ class Oss implements OssDriver
 	 *
 	 * @param array $config 阿里云 OSS 配置
 	 */
-	protected function __construct($config)
+	protected function __construct(array $config)
 	{
 		$this->accessKeyId = $config['alioss_access_key_id'];
 		$this->accessKeySecret = $config['alioss_access_key_secret'];
@@ -81,7 +81,7 @@ class Oss implements OssDriver
 	 * @param array $config 阿里云 OSS 配置
 	 * @return static
 	 */
-	public static function instance($config)
+	public static function instance(array $config): self
 	{
 		if (is_null(self::$instance)) {
 			self::$instance = new static($config);
@@ -96,7 +96,7 @@ class Oss implements OssDriver
 	 * @param string $filePath   本地文件路径
 	 * @return array
 	 */
-	public function save($objectName, $filePath)
+	public function save(string $objectName, string $filePath): array
 	{
 		try {
 			$upload = $this->ossClient->uploadFile($this->bucket, $objectName, $filePath);

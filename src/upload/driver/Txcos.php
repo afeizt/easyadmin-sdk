@@ -23,9 +23,9 @@ class Txcos extends FileBase
 	/**
 	 * 重写上传方法.
 	 *
-	 * @return array|void
+	 * @return array
 	 */
-	public function save()
+	public function save(): array
 	{
 		parent::save();
 		$cosIns = Cos::instance($this->uploadConfig);

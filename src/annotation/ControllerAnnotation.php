@@ -1,49 +1,22 @@
 <?php
 
-// +----------------------------------------------------------------------
-// | EasyAdmin
-// +----------------------------------------------------------------------
-// | PHP交流群: 763822524
-// +----------------------------------------------------------------------
-// | 开源协议  https://mit-license.org 
-// +----------------------------------------------------------------------
-// | github开源项目：https://github.com/zhongshaofa/EasyAdmin
-// +----------------------------------------------------------------------
+/**
+ * EasyAdmin SDK
+ *
+ * @author   afeizt@hotmail.com
+ * @license  MIT https://mit-license.org
+ * @link     https://github.com/afeizt/easyadmin-sdk
+ */
 
 namespace EasyAdmin\annotation;
 
-use Doctrine\Common\Annotations\Annotation\Attributes;
-use Doctrine\Common\Annotations\Annotation\Required;
-use Doctrine\Common\Annotations\Annotation\Target;
+use Attribute;
 
-/**
- * Class ControllerAnnotation
- *
- * @Annotation
- * @Target("CLASS")
- * @Attributes({
- *     @Attribute("title", type="string"),
- * })
- *
- * @since 2.0
- */
+#[Attribute(Attribute::TARGET_CLASS)]
 final class ControllerAnnotation
 {
-
-    /**
-     * Route group prefix for the controller
-     *
-     * @Required()
-     *
-     * @var string
-     */
-    public $title = '';
-
-    /**
-     * 是否开启权限控制
-     * @Enum({true,false})
-     * @var bool
-     */
-    public $auth = true;
-
+	public function __construct(
+		public string $title = '',
+		public bool   $auth  = true,
+	) {}
 }
