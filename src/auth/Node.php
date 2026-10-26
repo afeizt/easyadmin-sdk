@@ -10,12 +10,21 @@
 
 namespace EasyAdmin\auth;
 
+use EasyAdmin\auth\AuthConfig;
 use EasyAdmin\annotation\ControllerAnnotation;
 use EasyAdmin\annotation\NodeAnnotation;
 use Mycm\Annotations\Scanner;
 
 /**
  * 节点处理类
+ *
+ * 负责扫描控制器目录，通过 MyCm Annotations Scanner 读取注解元数据，
+ * 并使用 AuthConfig 解析 auth 字段，输出节点权限列表。
+ *
+ * 使用示例：
+ *   $node = new Node('/path/to/controller', 'app\admin\controller');
+ *   $node->setCachePath(runtime_path() . 'scanner');
+ *   $list = $node->getNodelist();
  */
 class Node
 {
@@ -27,6 +36,16 @@ class Node
 	private string $authFieldName = 'auth';
 
 	private ?Scanner $scanner = null;
+
+	/**
+	 * Scanner 缓存目录路径，null 表示不启用
+	 */
+	private ?string $cachePath = null;
+
+	/**
+	 * 是否调试模式，true 时跳过缓存
+	 */
+	private bool $debug = false;
 
 	/**
 	 * @param string $baseDir           控制器目录绝对路径
@@ -52,11 +71,32 @@ class Node
 	}
 
 	/**
+	 * 设置 Scanner 缓存目录
+	 *
+	 * 传入 TP8 runtime 路径如 runtime_path() . 'scanner'，
+	 * 扫描结果将序列化缓存到该目录，生产环境减少全量反射开销。
+	 */
+	public function setCachePath(string $cachePath): static
+	{
+		$this->cachePath = $cachePath;
+		return $this;
+	}
+
+	/**
+	 * 设置调试模式（跳过缓存，强制全量扫描）
+	 */
+	public function setDebug(bool $debug): static
+	{
+		$this->debug = $debug;
+		return $this;
+	}
+
+	/**
 	 * 已废弃，保留兼容旧调用
 	 */
 	public function setAnnotationCacheDir(string $annotationCacheDir): static
 	{
-		return $this;
+		return $this->setCachePath($annotationCacheDir);
 	}
 
 	/**
@@ -64,7 +104,7 @@ class Node
 	 */
 	public function setAnnotationDebug(bool $annotationDebug = true): static
 	{
-		return $this;
+		return $this->setDebug($annotationDebug);
 	}
 
 	/**
@@ -78,6 +118,9 @@ class Node
 
 	/**
 	 * 获取所有节点
+	 *
+	 * 使用 AuthConfig 解析 rawAuth → is_auth(bool)，保持输出格式兼容旧版。
+	 * 控制器级节点使用 $controller->rawAuth 而非硬编码 true。
 	 */
 	public function getNodelist(): array
 	{
@@ -89,18 +132,20 @@ class Node
 				continue;
 			}
 
+			$ctrlAuthConfig = AuthConfig::resolve($controller->rawAuth);
 			$nodeList[] = [
 				'node'    => $controller->controllerNode,
 				'title'   => $controller->title,
-				'is_auth' => true,
+				'is_auth' => $ctrlAuthConfig->needRbac(),
 				'type'    => 1,
 			];
 
 			foreach ($controller->nodes as $node) {
+				$methodAuthConfig = AuthConfig::resolve($node->rawAuth);
 				$nodeList[] = [
 					'node'    => $node->getNode(),
 					'title'   => $node->title,
-					'is_auth' => $node->isAuth,
+					'is_auth' => $methodAuthConfig->needRbac(),
 					'type'    => 2,
 				];
 			}
@@ -124,7 +169,7 @@ class Node
 	}
 
 	/**
-	 * 构建 Scanner 扫描选项，使用 EasyAdmin 自己的注解类
+	 * 构建 Scanner 扫描选项，包含缓存配置和 EasyAdmin 注解类
 	 */
 	private function buildScanOptions(): array
 	{
@@ -133,6 +178,8 @@ class Node
 			'controller_attribute_class' => ControllerAnnotation::class,
 			'node_attribute_class'       => NodeAnnotation::class,
 			'auth_field_name'            => $this->authFieldName,
+			'cache_path'                 => $this->cachePath,
+			'debug'                      => $this->debug,
 		];
 	}
 
