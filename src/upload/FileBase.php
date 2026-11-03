@@ -332,7 +332,7 @@ class FileBase
 	 * 流程：写入磁盘 → 可选水印 → 可选缩略图。
 	 * 路径中的目录分隔符统一替换为 / 以保证跨平台兼容。
 	 */
-	public function save(): void
+	public function save()
 	{
 		error_reporting(E_ERROR);
 		$this->completeFilePath = Filesystem::disk('public')->putFile('upload', $this->file);

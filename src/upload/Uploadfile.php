@@ -132,7 +132,7 @@ class Uploadfile
 	 *
 	 * @return array
 	 */
-	public function save(): array
+	public function save()
 	{
 		$obj = null;
 		if ($this->uploadType == 'local') {
