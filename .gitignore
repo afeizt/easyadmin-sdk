@@ -1,3 +1,5 @@
 .history/
 vendor/
 .idea
+.phpunit.cache/
+.vscode/
