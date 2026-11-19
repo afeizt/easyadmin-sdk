@@ -27,7 +27,7 @@ class Local extends FileBase
 	public function save(): array
 	{
 		parent::save();
-		SaveDb::trigger($this->tableName, [
+		$recordId = SaveDb::trigger($this->tableName, [
 			'upload_type' => $this->uploadType,
 			'original_name' => $this->file->getOriginalName(),
 			'mime_type' => $this->file->getOriginalMime(),
@@ -42,6 +42,7 @@ class Local extends FileBase
 			'msg' => '上传成功',
 			'url' => $this->completeFileUrl,
 			'thumb_url' => $this->completeThumbFileUrl,
+			'id' => $recordId,
 		];
 	}
 }

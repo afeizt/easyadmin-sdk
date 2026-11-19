@@ -30,13 +30,14 @@ class Alioss extends FileBase
 		parent::save();
 		$ossIns = Oss::instance($this->uploadConfig);
 		$upload = $ossIns->save($this->completeFilePath, $this->completeFilePath);
+		$recordId = 0;
 
 		if ($upload['save'] == true) {
 			if (!empty($this->completeThumbFilePath)) {
 				$thumb_upload = $ossIns->save($this->completeThumbFilePath, $this->completeFilePath);
 				$upload['thumb_url'] = $thumb_upload['url'];
 			}
-			SaveDb::trigger($this->tableName, [
+			$recordId = SaveDb::trigger($this->tableName, [
 				'upload_type' => $this->uploadType,
 				'original_name' => $this->file->getOriginalName(),
 				'mime_type' => $this->file->getOriginalMime(),
@@ -47,6 +48,8 @@ class Alioss extends FileBase
 			]);
 		}
 		$this->rmLocalSave();
+
+		$upload['id'] = $recordId;
 
 		return $upload;
 	}

@@ -30,13 +30,14 @@ class Txcos extends FileBase
 		parent::save();
 		$cosIns = Cos::instance($this->uploadConfig);
 		$upload = $cosIns->save($this->completeFilePath, $this->completeFilePath);
+		$recordId = 0;
 
 		if ($upload['save'] == true) {
 			if (!empty($this->completeThumbFilePath)) {
 				$thumb_upload = $cosIns->save($this->completeThumbFilePath, $this->completeFilePath);
 				$upload['thumb_url'] = $thumb_upload['url'];
 			}
-			SaveDb::trigger($this->tableName, [
+			$recordId = SaveDb::trigger($this->tableName, [
 				'upload_type' => $this->uploadType,
 				'original_name' => $this->file->getOriginalName(),
 				'mime_type' => $this->file->getOriginalMime(),
@@ -47,6 +48,8 @@ class Txcos extends FileBase
 			]);
 		}
 		$this->rmLocalSave();
+
+		$upload['id'] = $recordId;
 
 		return $upload;
 	}
