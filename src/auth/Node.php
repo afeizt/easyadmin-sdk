@@ -48,6 +48,14 @@ class Node
 	private bool $debug = false;
 
 	/**
+	 * rbac 未由注解显式声明时的兜底值
+	 *
+	 * 后端应用默认开启（与 CheckAdmin 中间件一致），前台公开接口默认关闭，
+	 * 由调用方按场景显式指定，避免节点表 is_auth 与实际鉴权口径不一致。
+	 */
+	private bool $defaultRbac = false;
+
+	/**
 	 * @param string $baseDir           控制器目录绝对路径
 	 * @param string $namespacePrefix    命名空间前缀，如 "app\admin\controller"
 	 * @param string $annotationCacheDir 已废弃，保留兼容旧调用
@@ -117,6 +125,15 @@ class Node
 	}
 
 	/**
+	 * 设置注解未显式声明 rbac 时的默认值
+	 */
+	public function setDefaultRbac(bool $defaultRbac): static
+	{
+		$this->defaultRbac = $defaultRbac;
+		return $this;
+	}
+
+	/**
 	 * 获取所有节点
 	 *
 	 * 使用 AuthConfig 解析 rawAuth → is_auth(bool)，保持输出格式兼容旧版。
@@ -132,7 +149,7 @@ class Node
 				continue;
 			}
 
-			$ctrlAuthConfig = AuthConfig::resolve($controller->rawAuth);
+			$ctrlAuthConfig = $this->resolveAuthConfig($controller->rawAuth);
 			$nodeList[] = [
 				'node'    => $controller->controllerNode,
 				'title'   => $controller->title,
@@ -141,7 +158,7 @@ class Node
 			];
 
 			foreach ($controller->nodes as $node) {
-				$methodAuthConfig = AuthConfig::resolve($node->rawAuth);
+				$methodAuthConfig = $this->resolveAuthConfig($node->rawAuth);
 				$nodeList[] = [
 					'node'    => $node->getNode(),
 					'title'   => $node->title,
@@ -152,6 +169,25 @@ class Node
 		}
 
 		return $nodeList;
+	}
+
+	/**
+	 * 解析注解 auth 值；rbac 未显式声明时使用 defaultRbac 兜底
+	 *
+	 * 与 CheckAdmin 中间件的判定口径保持一致，避免节点表 is_auth
+	 * 与运行时实际鉴权出现两套结论
+	 */
+	private function resolveAuthConfig(mixed $rawAuth): AuthConfig
+	{
+		$config = AuthConfig::resolve($rawAuth);
+		if ($config->rbacExplicit) {
+			return $config;
+		}
+		return new AuthConfig(
+			login: $config->login,
+			rbac: $this->defaultRbac,
+			rbacExplicit: false,
+		);
 	}
 
 	/**
