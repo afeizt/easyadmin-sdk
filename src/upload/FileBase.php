@@ -334,22 +334,33 @@ class FileBase
 	 */
 	public function save()
 	{
-		error_reporting(E_ERROR);
 		$this->completeFilePath = Filesystem::disk('public')->putFile('upload', $this->file);
 		$this->completeFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
 		$this->completeFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeFilePath);
-		$ext = $this->file->extension();
-		$image_exts = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
+		// 上传临时文件在 Windows/Linux 落盘名后缀不一致，须以原始文件名扩展名为准
+		$ext = strtolower(
+			method_exists($this->file, 'getOriginalExtension')
+				? $this->file->getOriginalExtension()
+				: (string) $this->file->extension()
+		);
+		$imageExts = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
+		$isImage = in_array($ext, $imageExts, true);
 
 		// 仅对常见图片格式添加水印
-		if ($this->add_watermark && in_array($ext, $image_exts)) {
+		if ($this->add_watermark && $isImage) {
 			$this->addWaterMark($this->completeFilePath);
 		}
 		// 仅对常见图片格式生成缩略图
-		if ($this->image_thumb && in_array($ext, $image_exts)) {
-			$this->completeThumbFilePath = $this->createThumbImage($this->completeFilePath, $ext);
-			$this->completeThumbFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
-			$this->completeThumbFileUrl = self::getUrlPrefix() . str_replace(DIRECTORY_SEPARATOR, '/', $this->completeThumbFilePath);
+		if ($this->image_thumb && $isImage) {
+			$thumbPath = $this->createThumbImage($this->completeFilePath, $ext);
+			if ($thumbPath !== false) {
+				$this->completeThumbFilePath = str_replace(DIRECTORY_SEPARATOR, '/', $thumbPath);
+				$this->completeThumbFileUrl = self::getUrlPrefix() . $this->completeThumbFilePath;
+			} else {
+				// 生成失败置空串，前端据空值回退原图
+				$this->completeThumbFilePath = '';
+				$this->completeThumbFileUrl = '';
+			}
 		}
 	}
 	/**
@@ -382,36 +393,36 @@ class FileBase
 	 * @param string $ext  文件扩展名
 	 * @return string|false 缩略图路径，非图片格式返回 false
 	 */
-	private function createThumbImage(string $file, string $ext)
+	private function createThumbImage(string $file, string $ext): string|false
 	{
-		error_reporting(E_ERROR);
 		$mimeType = $this->file->getOriginalMime();
-		if ($file) {
+		$im = false;
+		if ($file !== '') {
 			if ($mimeType == 'image/pjpeg' || $mimeType == 'image/jpeg') {
 				$imgtype = 'jpeg';
 				$im = imagecreatefromjpeg($file);
 			} elseif ($mimeType == 'image/x-png' || $mimeType == 'image/png') {
 				$imgtype = 'png';
 				$im = imagecreatefrompng($file);
-				imagesavealpha($im, true); //这里很重要;
 			} elseif ($mimeType == 'image/gif') {
 				$imgtype = 'gif';
 				$im = imagecreatefromgif($file);
-				imagesavealpha($im, true); //这里很重要;
 			} elseif ($mimeType == 'image/webp') {
 				$imgtype = 'webp';
 				$im = imagecreatefromwebp($file);
 			} else {
 				return false; //非图片
 			}
-			if (!empty($im)) {
+			if ($im !== false) {
 				$thumb_name = $this->getThumbName($file, $ext);
-				$this->resizeImage($im, $thumb_name, $mimeType);
+				$resized = $this->resizeImage($im, $thumb_name, $mimeType);
 				imagedestroy($im);
+
+				return $resized ? $thumb_name : false;
 			}
 		}
 
-		return $thumb_name;
+		return false;
 	}
 
 	/**
@@ -421,10 +432,10 @@ class FileBase
 	 */
 	private function getThumbName(string $file, string $ext): string
 	{
-		$index = strpos($file, $ext);
-		$basename = substr($file, 0, $index - 1);
+		$dir = pathinfo($file, PATHINFO_DIRNAME);
+		$name = pathinfo($file, PATHINFO_FILENAME);
 
-		return $basename . '_thumb.' . $ext;
+		return $dir . '/' . $name . '_thumb.' . strtolower($ext);
 	}
 
 	/**
@@ -437,69 +448,61 @@ class FileBase
 	 * @param string   $file     输出文件路径
 	 * @param string   $mimeType 输出 mime 类型（影响 imagepng/imagejpeg 选择）
 	 */
-	private function resizeImage($im, string $file, string $mimeType = 'jpeg'): void
+	private function resizeImage(\GdImage $im, string $file, string $mimeType = 'jpeg'): bool
 	{
-		error_reporting(E_ERROR);
 		$width = imagesx($im);
 		$height = imagesy($im);
-		$maxwidth = $this->image_thumb_width;
-		$maxheight = $this->image_thumb_height;
+		$maxwidth = max(0, $this->image_thumb_width ?? 0);
+		$maxheight = max(0, $this->image_thumb_height ?? 0);
 		if (($maxwidth && $width > $maxwidth) || ($maxheight && $height > $maxheight)) {
-			$RESIZEWIDTH = false;
-			$RESIZEHEIGHT = false;
+			$ratioCandidates = [];
 			if ($maxwidth && $width > $maxwidth) {
-				$widthratio = $maxwidth / $width;
-				$RESIZEWIDTH = true;
+				$ratioCandidates[] = $maxwidth / $width;
 			}
 			if ($maxheight && $height > $maxheight) {
-				$heightratio = $maxheight / $height;
-				$RESIZEHEIGHT = true;
+				$ratioCandidates[] = $maxheight / $height;
 			}
-			if ($RESIZEWIDTH && $RESIZEHEIGHT) {
-				if ($widthratio < $heightratio) {
-					$ratio = $widthratio;
-				} else {
-					$ratio = $heightratio;
-				}
-			} elseif ($RESIZEWIDTH) {
-				$ratio = $widthratio;
-			} elseif ($RESIZEHEIGHT) {
-				$ratio = $heightratio;
-			}
-
-			$newwidth = intval($width * $ratio);
-			$newheight = intval($height * $ratio);
-			imagesavealpha($im, true);
+			$ratio = min($ratioCandidates);
+			$newwidth = max(1, (int) round($width * $ratio));
+			$newheight = max(1, (int) round($height * $ratio));
 			if (function_exists('imagecopyresampled')) {
 				$newim = imagecreatetruecolor($newwidth, $newheight);
-				imagesavealpha($newim, true); //不要丢了$resize_im图像的透明色;
-				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
-				//新增两行解决png图片背景发黑问题
-				$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127); // 设置透明背景色
-				imagefill($newim, 0, 0, $transparent); // 填充透明背景色
+				imagealphablending($newim, false);
+				imagesavealpha($newim, true);
+				$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127);
+				imagefill($newim, 0, 0, $transparent);
 
 				imagecopyresampled($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 			} else {
 				$newim = imagecreate($newwidth, $newheight);
-				imagealphablending($newim, false); //不合并颜色,直接用$im图像颜色替换,包括透明色;
-				imagesavealpha($newim, true); //不要丢了$resize_im图像的透明色;
+				imagealphablending($newim, false);
+				imagesavealpha($newim, true);
+				$transparent = imagecolorallocatealpha($newim, 0, 0, 0, 127);
+				imagefill($newim, 0, 0, $transparent);
 				imagecopyresized($newim, $im, 0, 0, 0, 0, $newwidth, $newheight, $width, $height);
 			}
-			if ($mimeType == 'image/png') {
-				imagepng($newim, $file);
-			} elseif ($mimeType == 'image/gif') {
-				$color = imagecolorallocate($newim, 255, 255, 255); //解决gif背景黑色问题
-				imagecolortransparent($newim, $color); //解决gif背景黑色问题
-				imagefill($newim, 0, 0, $color); //解决gif背景黑色问题
-				imagegif($newim, $file);
-			} else {
-				imagejpeg($newim, $file);
-			}
-
+			$saved = $this->saveImageByMime($newim, $file, $mimeType);
 			imagedestroy($newim);
-		} else {
-			imagejpeg($im, $file);
+
+			return $saved;
 		}
+
+		return $this->saveImageByMime($im, $file, $mimeType);
+	}
+
+	/**
+	 * 按原图 mime 保存图像，保证缩略图与原图格式一致
+	 */
+	private function saveImageByMime(\GdImage $im, string $file, string $mimeType): bool
+	{
+		$result = match ($mimeType) {
+			'image/png', 'image/x-png' => imagepng($im, $file),
+			'image/gif' => imagegif($im, $file),
+			'image/webp' => function_exists('imagewebp') ? imagewebp($im, $file) : false,
+			default => imagejpeg($im, $file),
+		};
+
+		return $result === true;
 	}
 
 	/**
@@ -512,12 +515,11 @@ class FileBase
 	 */
 	private function addWaterMark(string $file): void
 	{
-		error_reporting(E_ERROR);
 		$file_width = 0;
 		$file_height = 0;
 		$file_size = $this->file->getSize();
 
-		$iinfo = getimagesize($file, $iinfo);
+		$iinfo = getimagesize($file);
 		if (empty($iinfo)) {
 			return;
 		} //非图片
@@ -540,7 +542,7 @@ class FileBase
 				$simage = imagecreatefrompng($file);
 				break;
 			case 6:
-				$simage = imagecreatefromwbmp($file);
+				$simage = imagecreatefrombmp($file);
 				break;
 			case 18:
 				$simage = imagecreatefromwebp($file);
@@ -582,10 +584,13 @@ class FileBase
 				break;
 			case 'image': //加水印图片
 				$image = empty($this->watermark_image) ? $_SERVER['DOCUMENT_ROOT'] . '/static/watermark.png' : $this->watermark_image;
-				$watermark_image = getimagesize($image);
-				$watermark_width = $watermark_image[0];
-				$watermark_height = $watermark_image[1];
-				$watermark_type = $watermark_image[2];
+				$watermarkInfo = getimagesize($image);
+				if (empty($watermarkInfo)) {
+					break;
+				}
+				$watermark_width = $watermarkInfo[0];
+				$watermark_height = $watermarkInfo[1];
+				$watermark_type = $watermarkInfo[2];
 				$x1 = intval($file_width / 2 - $watermark_width / 2); //得到居中水印的左边坐标;
 				$y1 = intval($file_height / 2 - $watermark_height / 2); //得到居中水印的上边坐标
 				$x2 = intval($x1 + $watermark_width);
@@ -597,7 +602,7 @@ class FileBase
 				} elseif ($watermark_type == 2) {
 					$simage1 = imagecreatefromjpeg($image);
 				} elseif ($watermark_type == 6) {
-					$simage1 = imagecreatefromwbmp($image);
+					$simage1 = imagecreatefrombmp($image);
 				} elseif ($watermark_type == 18) {
 					$simage1 = imagecreatefromwebp($image);
 				} else {
@@ -612,8 +617,7 @@ class FileBase
 		//生成水印覆盖原上传文件
 		switch ($iinfo[2]) {
 			case 1:
-				//imagegif($nimage, $destination);
-				imagejpeg($nimage, $file);
+				imagegif($nimage, $file);
 				break;
 			case 2:
 				imagejpeg($nimage, $file);
@@ -622,7 +626,8 @@ class FileBase
 				imagepng($nimage, $file);
 				break;
 			case 6:
-				imagewbmp($nimage, $file);
+				imagebmp($nimage, $file);
+				break;
 			case 18:
 				imagewebp($nimage, $file);
 				break;
