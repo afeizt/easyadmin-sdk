@@ -9,18 +9,12 @@
 			"email": "afeizt@hotmail.com"
 		}
 	],
-	"minimum-stability": "dev",
+	"minimum-stability": "stable",
 	"require": {
 		"php": ">=8.2",
-		"mycm/annotations": "dev-main",
+		"mycm/annotations": "^1.0",
 		"ext-json": "*"
 	},
-	"repositories": [
-		{
-			"type": "path",
-			"url": "f:/wwwroot/MycmAnnotations"
-		}
-	],
 	"require-dev": {
 		"mockery/mockery": "^1.3.0",
 		"phpunit/phpunit": "^11.5"
